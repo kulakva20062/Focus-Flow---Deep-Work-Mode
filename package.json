@@ -1,49 +1,56 @@
 {
   "name": "focus-flow",
-  "displayName": "Focus Flow - Deep Work Mode",
-  "description": "Переключайтесь между режимом глубокой концентрации и стандартным видом VS Code",
-  "version": "1.0.0",
-  "engines": {
-    "vscode": "^1.60.0"
+  "displayName": "Focus Flow",
+  "description": "Быстрый переход в режим фокуса и обратно",
+  "version": "0.0.1",
+  "publisher": "your-name",
+  "repository": {
+    "type": "git"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "onCommand:focus-flow.enterFocusMode",
-    "onCommand:focus-flow.enterStandardMode",
-    "onCommand:focus-flow.saveStandardLayout"
-  ],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Productivity"],
   "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:focus-flow.saveStandardLayout",
+    "onCommand:focus-flow.enterFocusMode",
+    "onCommand:focus-flow.enterStandardMode"
+  ],
   "contributes": {
     "commands": [
       {
+        "command": "focus-flow.saveStandardLayout",
+        "title": "Focus Flow: Сохранить стандартный layout"
+      },
+      {
         "command": "focus-flow.enterFocusMode",
-        "title": "Focus Flow: Enter Focus Mode",
-        "category": "Focus Flow"
+        "title": "Focus Flow: Войти в режим фокуса"
       },
       {
         "command": "focus-flow.enterStandardMode",
-        "title": "Focus Flow: Enter Standard Mode",
-        "category": "Focus Flow"
-      },
-      {
-        "command": "focus-flow.saveStandardLayout",
-        "title": "Focus Flow: Save Current Layout as Standard",
-        "category": "Focus Flow"
+        "title": "Focus Flow: Вернуться в стандартный режим"
       }
     ],
-    "keybindings": [
-      {
-        "command": "focus-flow.enterFocusMode",
-        "key": "ctrl+f11",
-        "mac": "cmd+f11"
-      },
-      {
-        "command": "focus-flow.enterStandardMode",
-        "key": "ctrl+shift+f11",
-        "mac": "cmd+shift+f11"
+    "configuration": {
+      "title": "Focus Flow",
+      "properties": {
+        "focus-flow.switchThemeInFocus": {
+          "type": "boolean",
+          "default": true,
+          "description": "Переключать тему при входе в режим фокуса"
+        },
+        "focus-flow.highContrastTheme": {
+          "type": "string",
+          "default": "Default High Contrast",
+          "description": "Тема для режима фокуса"
+        },
+        "focus-flow.toggleFullScreen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Переключать полноэкранный режим при входе/выходе"
+        }
       }
-    ]
+    }
   }
 }

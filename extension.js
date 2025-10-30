@@ -1,146 +1,177 @@
 const vscode = require('vscode');
 
-// Храним состояние стандартного layout
-let standardLayoutState = {
-    sideBarVisible: true,
-    panelVisible: true,
-    statusBarVisible: true,
-    activityBarVisible: true,
-    zenMode: false,
-    theme: null
-};
+const BASELINE_KEY = 'focusFlow.standardLayout';
+const ACTIVE_KEY = 'focusFlow.active';
+const FS_TOGGLED_KEY = 'focusFlow.fullScreenToggled';
+
+let extContext;
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+    extContext = context;
     console.log('Focus Flow активирован');
 
-    // Загружаем сохраненный layout при активации
-    loadStandardLayout();
-
-    // Команда: Сохранить текущий layout как стандартный
-    let saveStandardLayout = vscode.commands.registerCommand('focus-flow.saveStandardLayout', function () {
-        saveCurrentLayoutAsStandard();
-        vscode.window.showInformationMessage('Focus Flow: Текущий layout сохранен как стандартный');
-    });
-
-    // Команда: Войти в режим фокуса
-    let enterFocusMode = vscode.commands.registerCommand('focus-flow.enterFocusMode', function () {
-        enterFocusFlowMode();
-    });
-
-    // Команда: Вернуться в стандартный режим
-    let enterStandardMode = vscode.commands.registerCommand('focus-flow.enterStandardMode', function () {
-        enterStandardFlowMode();
-    });
-
-    context.subscriptions.push(saveStandardLayout, enterFocusMode, enterStandardMode);
+    // Команды
+    context.subscriptions.push(
+        vscode.commands.registerCommand('focus-flow.saveStandardLayout', async () => {
+            await saveCurrentLayoutAsStandard();
+            vscode.window.showInformationMessage('Focus Flow: Текущий layout сохранен как стандартный');
+        }),
+        vscode.commands.registerCommand('focus-flow.enterFocusMode', async () => {
+            await enterFocusFlowMode();
+        }),
+        vscode.commands.registerCommand('focus-flow.enterStandardMode', async () => {
+            await enterStandardFlowMode();
+        }),
+    );
 }
 
 function deactivate() {}
 
 /**
- * Сохраняет текущее состояние layout как стандартное
+ * Сохранение текущего состояния (только то, что можно надежно считать/восстановить).
  */
-function saveCurrentLayoutAsStandard() {
-    const config = vscode.workspace.getConfiguration('workbench');
-    
-    standardLayoutState = {
-        sideBarVisible: vscode.window.visibleTextEditors.length > 0 ? 
-            vscode.workspace.getConfiguration('workbench').get('sideBar.visible') : true,
-        panelVisible: vscode.workspace.getConfiguration('workbench').get('panel.visible'),
-        statusBarVisible: vscode.workspace.getConfiguration('workbench').get('statusBar.visible'),
-        activityBarVisible: vscode.workspace.getConfiguration('workbench').get('activityBar.visible'),
-        zenMode: vscode.workspace.getConfiguration('workbench').get('zenMode'),
-        theme: vscode.workspace.getConfiguration('workbench').get('colorTheme')
+async function saveCurrentLayoutAsStandard() {
+    const wb = vscode.workspace.getConfiguration('workbench');
+    const ed = vscode.workspace.getConfiguration('editor');
+
+    const baseline = {
+        activityBarVisible: wb.get('activityBar.visible'),
+        statusBarVisible: wb.get('statusBar.visible'),
+        theme: wb.get('colorTheme'),
+        minimapEnabled: ed.get('minimap.enabled')
     };
 
-    // Сохраняем в глобальное состояние
-    vscode.workspace.getConfiguration('focus-flow').update('standardLayout', standardLayoutState, true);
+    await extContext.globalState.update(BASELINE_KEY, baseline);
 }
 
 /**
- * Загружает сохраненный стандартный layout
+ * Загрузка ранее сохраненного состояния. Если не сохранено — берем текущее как дефолт.
  */
-function loadStandardLayout() {
-    const savedLayout = vscode.workspace.getConfiguration('focus-flow').get('standardLayout');
-    if (savedLayout) {
-        standardLayoutState = savedLayout;
-    }
+function getBaselineOrCurrent() {
+    const stored = extContext.globalState.get(BASELINE_KEY);
+    if (stored) return stored;
+
+    const wb = vscode.workspace.getConfiguration('workbench');
+    const ed = vscode.workspace.getConfiguration('editor');
+
+    return {
+        activityBarVisible: wb.get('activityBar.visible'),
+        statusBarVisible: wb.get('statusBar.visible'),
+        theme: wb.get('colorTheme'),
+        minimapEnabled: ed.get('minimap.enabled')
+    };
 }
 
 /**
- * Вход в режим глубокой концентрации
+ * Вход в режим фокуса
  */
 async function enterFocusFlowMode() {
-    // Сохраняем текущее состояние перед переходом в focus mode
-    saveCurrentLayoutAsStandard();
-
-    // 1. Скрываем боковую панель
-    await vscode.workspace.getConfiguration('workbench').update('sideBar.visible', false, true);
-    
-    // 2. Скрываем нижнюю панель
-    await vscode.workspace.getConfiguration('workbench').update('panel.visible', false, true);
-    
-    // 3. Скрываем статус бар для максимальной концентрации
-    await vscode.workspace.getConfiguration('workbench').update('statusBar.visible', false, true);
-    
-    // 4. Скрываем activity bar
-    await vscode.workspace.getConfiguration('workbench').update('activityBar.visible', false, true);
-
-    // 5. Переключаемся на высококонтрастную тему
-    const currentTheme = vscode.workspace.getConfiguration('workbench').get('colorTheme');
-    if (!currentTheme.includes('High Contrast')) {
-        await vscode.workspace.getConfiguration('workbench').update('colorTheme', 'Default High Contrast', true);
+    const isActive = extContext.globalState.get(ACTIVE_KEY) === true;
+    if (isActive) {
+        vscode.window.showInformationMessage('Focus Flow уже активен');
+        return;
     }
 
-    // 6. Включаем полноэкранный режим (максимизируем окно)
-    await vscode.commands.executeCommand('workbench.action.toggleFullScreen');
+    // Сначала сохраним текущий layout
+    await saveCurrentLayoutAsStandard();
 
-    // 7. Отключаем уведомления (через настройки)
-    await vscode.workspace.getConfiguration('').update('editor.minimap.enabled', false, true);
-    
-    vscode.window.showInformationMessage('🚀 Focus Flow: Режим глубокой концентрации активирован!', 
-        'Вернуться к стандартному виду').then(selection => {
-        if (selection) {
-            enterStandardFlowMode();
+    const wb = vscode.workspace.getConfiguration('workbench');
+    const ed = vscode.workspace.getConfiguration('editor');
+    const ff = vscode.workspace.getConfiguration('focus-flow');
+
+    // 1. Скрываем боковую панель и нижнюю панель (командами — настроек видимости нет)
+    await vscode.commands.executeCommand('workbench.action.closeSidebar');
+    await vscode.commands.executeCommand('workbench.action.closePanel');
+
+    // 2. Скрываем статус-бар и activity bar настройками (они поддерживаются)
+    await wb.update('statusBar.visible', false, vscode.ConfigurationTarget.Global);
+    await wb.update('activityBar.visible', false, vscode.ConfigurationTarget.Global);
+
+    // 3. Отключаем миникарту
+    await ed.update('minimap.enabled', false, vscode.ConfigurationTarget.Global);
+
+    // 4. Переключаем тему (опционально)
+    if (ff.get('switchThemeInFocus')) {
+        const currentTheme = wb.get('colorTheme');
+        const targetTheme = ff.get('highContrastTheme') || 'Default High Contrast';
+        if (currentTheme !== targetTheme) {
+            await wb.update('colorTheme', targetTheme, vscode.ConfigurationTarget.Global);
         }
-    });
+    }
+
+    // 5. Полноэкранный режим (опционально)
+    if (ff.get('toggleFullScreen')) {
+        await vscode.commands.executeCommand('workbench.action.toggleFullScreen');
+        await extContext.globalState.update(FS_TOGGLED_KEY, true);
+    } else {
+        await extContext.globalState.update(FS_TOGGLED_KEY, false);
+    }
+
+    await extContext.globalState.update(ACTIVE_KEY, true);
+
+    vscode.window
+        .showInformationMessage('🚀 Focus Flow: Режим фокуса активирован!', 'Вернуться к стандартному виду')
+        .then(async (sel) => {
+            if (sel) await enterStandardFlowMode();
+        });
 }
 
 /**
- * Возврат в стандартный режим
+ * Выход из режима фокуса
  */
 async function enterStandardFlowMode() {
-    // 1. Восстанавливаем боковую панель
-    await vscode.workspace.getConfiguration('workbench').update('sideBar.visible', 
-        standardLayoutState.sideBarVisible !== undefined ? standardLayoutState.sideBarVisible : true, true);
-    
-    // 2. Восстанавливаем нижнюю панель
-    await vscode.workspace.getConfiguration('workbench').update('panel.visible', 
-        standardLayoutState.panelVisible !== undefined ? standardLayoutState.panelVisible : true, true);
-    
-    // 3. Восстанавливаем статус бар
-    await vscode.workspace.getConfiguration('workbench').update('statusBar.visible', 
-        standardLayoutState.statusBarVisible !== undefined ? standardLayoutState.statusBarVisible : true, true);
-    
-    // 4. Восстанавливаем activity bar
-    await vscode.workspace.getConfiguration('workbench').update('activityBar.visible', 
-        standardLayoutState.activityBarVisible !== undefined ? standardLayoutState.activityBarVisible : true, true);
+    const isActive = extContext.globalState.get(ACTIVE_KEY) === true;
+    const baseline = getBaselineOrCurrent();
 
-    // 5. Восстанавливаем оригинальную тему
-    if (standardLayoutState.theme) {
-        await vscode.workspace.getConfiguration('workbench').update('colorTheme', standardLayoutState.theme, true);
+    const wb = vscode.workspace.getConfiguration('workbench');
+    const ed = vscode.workspace.getConfiguration('editor');
+
+    // 1. Восстанавливаем статус-бар и activity bar
+    if (typeof baseline.statusBarVisible === 'boolean') {
+        await wb.update('statusBar.visible', baseline.statusBarVisible, vscode.ConfigurationTarget.Global);
+    }
+    if (typeof baseline.activityBarVisible === 'boolean') {
+        await wb.update('activityBar.visible', baseline.activityBarVisible, vscode.ConfigurationTarget.Global);
     }
 
-    // 6. Выходим из полноэкранного режима
-    await vscode.commands.executeCommand('workbench.action.toggleFullScreen');
+    // 2. Восстанавливаем миникарту
+    if (typeof baseline.minimapEnabled === 'boolean') {
+        await ed.update('minimap.enabled', baseline.minimapEnabled, vscode.ConfigurationTarget.Global);
+    }
 
-    // 7. Восстанавливаем мини-карту
-    await vscode.workspace.getConfiguration('').update('editor.minimap.enabled', true, true);
+    // 3. Восстанавливаем тему
+    if (baseline.theme) {
+        await wb.update('colorTheme', baseline.theme, vscode.ConfigurationTarget.Global);
+    }
 
-    vscode.window.showInformationMessage('👋 Focus Flow: Стандартный вид восстановлен');
+    // 4. Возвращаем боковую и нижнюю панели (командами)
+    // Откроем Проводник (гарантированно покажет боковую панель):
+    await vscode.commands.executeCommand('workbench.view.explorer');
+    // Откроем нижнюю панель (Show Panel; если такой команды нет в вашей версии, используйте togglePanel):
+    try {
+        await vscode.commands.executeCommand('workbench.action.openPanel');
+    } catch {
+        // fallback на toggle, если openPanel недоступна
+        await vscode.commands.executeCommand('workbench.action.togglePanel');
+    }
+
+    // 5. Выходим из полноэкранного режима, если включали его мы
+    if (extContext.globalState.get(FS_TOGGLED_KEY) === true) {
+        await vscode.commands.executeCommand('workbench.action.toggleFullScreen');
+        await extContext.globalState.update(FS_TOGGLED_KEY, false);
+    }
+
+    await extContext.globalState.update(ACTIVE_KEY, false);
+
+    // Сообщение выводим всегда; если пользователь вызывал выход вручную, это ожидаемо
+    if (isActive) {
+        vscode.window.showInformationMessage('👋 Focus Flow: Стандартный вид восстановлен');
+    } else {
+        vscode.window.showInformationMessage('Focus Flow: Стандартный вид активен');
+    }
 }
 
 module.exports = {
