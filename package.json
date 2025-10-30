@@ -1,0 +1,49 @@
+{
+  "name": "focus-flow",
+  "displayName": "Focus Flow - Deep Work Mode",
+  "description": "Переключайтесь между режимом глубокой концентрации и стандартным видом VS Code",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:focus-flow.enterFocusMode",
+    "onCommand:focus-flow.enterStandardMode",
+    "onCommand:focus-flow.saveStandardLayout"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "focus-flow.enterFocusMode",
+        "title": "Focus Flow: Enter Focus Mode",
+        "category": "Focus Flow"
+      },
+      {
+        "command": "focus-flow.enterStandardMode",
+        "title": "Focus Flow: Enter Standard Mode",
+        "category": "Focus Flow"
+      },
+      {
+        "command": "focus-flow.saveStandardLayout",
+        "title": "Focus Flow: Save Current Layout as Standard",
+        "category": "Focus Flow"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "focus-flow.enterFocusMode",
+        "key": "ctrl+f11",
+        "mac": "cmd+f11"
+      },
+      {
+        "command": "focus-flow.enterStandardMode",
+        "key": "ctrl+shift+f11",
+        "mac": "cmd+shift+f11"
+      }
+    ]
+  }
+}
