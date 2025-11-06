@@ -2,13 +2,13 @@
   "name": "focus-flow",
   "displayName": "Focus Flow",
   "description": "Быстрый переход в режим фокуса и обратно",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "publisher": "your-name",
   "repository": {
     "type": "git"
   },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.60.0"
   },
   "categories": ["Productivity"],
   "main": "./extension.js",
@@ -30,6 +30,20 @@
       {
         "command": "focus-flow.enterStandardMode",
         "title": "Focus Flow: Вернуться в стандартный режим"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "focus-flow.saveStandardLayout",
+        "key": "ctrl+shift+1"
+      },
+      {
+        "command": "focus-flow.enterFocusMode",
+        "key": "ctrl+shift+2"
+      },
+      {
+        "command": "focus-flow.enterStandardMode",
+        "key": "ctrl+shift+3"
       }
     ],
     "configuration": {

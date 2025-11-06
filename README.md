@@ -6,24 +6,25 @@
 
 ### 🔧 Три основные команды:
 
-1. **Save Current Layout as Standard** (`Focus Flow: Save Current Layout as Standard`)
+1. **Save Current Layout as Standard** (`Focus Flow: Сохранить стандартный layout`)
    - Сохраняет текущее расположение панелей как стандартное
 
-2. **Enter Focus Mode** (`Focus Flow: Enter Focus Mode`) 
+2. **Enter Focus Mode** (`Focus Flow: Войти в режим фокуса`) 
    - Скрывает все панели (боковая, нижняя, статус бар)
    - Переключает на высококонтрастную тему
    - Включает полноэкранный режим
    - Идеально для глубокой концентрации!
 
-3. **Enter Standard Mode** (`Focus Flow: Enter Standard Mode`)
+3. **Enter Standard Mode** (`Focus Flow: Вернуться в стандартный режим`)
    - Восстанавливает сохраненный layout
    - Возвращает оригинальную тему
    - Выходит из полноэкранного режима
 
 ## Горячие клавиши
 
-- `Ctrl+F11` (Win/Linux) / `Cmd+F11` (Mac) - Войти в режим фокуса
-- `Ctrl+Shift+F11` (Win/Linux) / `Cmd+Shift+F11` (Mac) - Вернуться в стандартный режим
+- `Ctrl+shift+1` Сохранить стандартный layout
+- `Ctrl+shift+2` Войти в режим фокуса
+- `Ctrl+shift+3` Вернуться в стандартный режим
 
 ## Использование
 
