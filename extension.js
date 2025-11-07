@@ -11,6 +11,10 @@ const WARNED_ACTIVITYBAR_KEY = 'focusFlow.warnedActivityBarMissing';
 let extContext;
 let busy = false;
 
+/**
+ * Активация расширения - регистрация команд и инициализация
+ * Контекст расширения VS Code
+ */
 function activate(context) {
     extContext = context;
     console.log('Focus Flow активирован');
@@ -29,8 +33,16 @@ function activate(context) {
     );
 }
 
+/**
+ * Деактивация расширения
+ */
 function deactivate() {}
 
+/**
+ * Декоратор для предотвращения параллельного выполнения функций
+ * fn - Функция для обертывания
+ * return - Обернутая функция с проверкой занятости
+ */
 function withLock(fn) {
     return async (...args) => {
         if (busy) return; 
@@ -43,6 +55,13 @@ function withLock(fn) {
     };
 }
 
+/**
+ * Безопасное изменение булевых настроек Workbench с fallback на команды переключения
+ * setting - Название настройки
+ * desired - Желаемое значение
+ * toggleCommand - Команда для переключения (fallback)
+ * toggledFlagKey - Ключ для сохранения флага изменения
+ */
 async function safeSetWorkbenchBool(setting, desired, toggleCommand, toggledFlagKey) {
     const wb = vscode.workspace.getConfiguration('workbench');
 
@@ -84,6 +103,13 @@ async function safeSetWorkbenchBool(setting, desired, toggleCommand, toggledFlag
     }
 }
 
+/**
+ * Безопасное восстановление булевых настроек Workbench
+ * setting - Название настройки
+ * baselineValue - Базовое значение для восстановления
+ * toggleCommand - Команда для переключения (fallback)
+ * toggledFlagKey - Ключ флага изменения
+ */
 async function safeRestoreWorkbenchBool(setting, baselineValue, toggleCommand, toggledFlagKey) {
     const wb = vscode.workspace.getConfiguration('workbench');
     try {
@@ -104,6 +130,10 @@ async function safeRestoreWorkbenchBool(setting, baselineValue, toggleCommand, t
     }
 }
 
+/**
+ * Сохраняет текущую конфигурацию VS Code как стандартную
+ * Сохраняет видимость панелей, тему и настройки мини-карты
+ */
 async function saveCurrentLayoutAsStandard() {
     const wb = vscode.workspace.getConfiguration('workbench');
     const ed = vscode.workspace.getConfiguration('editor');
@@ -117,6 +147,11 @@ async function saveCurrentLayoutAsStandard() {
 
     await extContext.globalState.update(BASELINE_KEY, baseline);
 }
+
+/**
+ * Получает сохраненную базовую конфигурацию или текущую если сохраненной нет
+ * return - Базовая конфигурация layout
+ */
 
 function getBaselineOrCurrent() {
     const stored = extContext.globalState.get(BASELINE_KEY);
@@ -133,6 +168,9 @@ function getBaselineOrCurrent() {
     };
 }
 
+/**
+ * Включает режим фокуса - скрывает панели, меняет тему и включает полноэкранный режим
+ */
 async function enterFocusFlowMode() {
     if (extContext.globalState.get(ACTIVE_KEY) === true) {
         vscode.window.showInformationMessage('Focus Flow уже активен');
@@ -186,6 +224,9 @@ async function enterFocusFlowMode() {
     }
 }
 
+/**
+ * Восстанавливает стандартный режим - возвращает все настройки к сохраненным значениям
+ */
 async function enterStandardFlowMode() {
     const baseline = getBaselineOrCurrent();
 
