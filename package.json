@@ -2,7 +2,7 @@
   "name": "focus-flow",
   "displayName": "Focus Flow",
   "description": "Быстрый переход в режим фокуса и обратно",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "Vladislav-Kulakovskii",
   "repository": {
     "type": "git"
