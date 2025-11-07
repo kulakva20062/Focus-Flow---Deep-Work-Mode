@@ -172,7 +172,7 @@ async function enterFocusFlowMode() {
         await extContext.globalState.update(ACTIVE_KEY, true);
         activated = true;
 
-        vscode.window.showInformationMessage('🚀 Focus Flow: Режим фокуса активирован!', 'Вернуться к стандартному виду')
+        vscode.window.showInformationMessage('Focus Flow: Режим фокуса активирован!', 'Вернуться к стандартному виду')
             .then(async (sel) => {
                 if (sel) await enterStandardFlowMode();
             });
@@ -218,7 +218,7 @@ async function enterStandardFlowMode() {
 
         await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
 
-        vscode.window.showInformationMessage('👋 Focus Flow: Стандартный вид восстановлен');
+        vscode.window.showInformationMessage('Focus Flow: Стандартный вид восстановлен');
     } catch (e) {
         vscode.window.showErrorMessage('Focus Flow: Ошибка при восстановлении стандартного вида. Подробности в консоли разработчика.');
         console.error(e);

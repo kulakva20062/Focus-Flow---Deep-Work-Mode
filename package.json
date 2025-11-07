@@ -2,15 +2,14 @@
   "name": "focus-flow",
   "displayName": "Focus Flow",
   "description": "Быстрый переход в режим фокуса и обратно",
-  "version": "0.0.4",
-  "publisher": "your-name",
+  "version": "0.1.0",
+  "publisher": "Vladislav-Kulakovskii",
   "repository": {
     "type": "git"
   },
   "engines": {
     "vscode": "^1.60.0"
   },
-  "categories": ["Productivity"],
   "main": "./extension.js",
   "activationEvents": [
     "onCommand:focus-flow.saveStandardLayout",
